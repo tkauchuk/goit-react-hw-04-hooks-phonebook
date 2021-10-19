@@ -1,25 +1,87 @@
-import logo from './logo.svg';
-import './App.css';
+import { Component, Fragment } from "react";
+import { v4 as uuidv4 } from 'uuid';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import Section from "./components/Section";
+import ContactForm from "./components/ContactForm";
+import Filter from './components/Filter';
+import ContactList from "./components/ContactList";
+
+class App extends Component {
+
+  state = {
+    contacts: [],
+    filter: ''
+  }
+  
+  componentDidMount() {
+    const stringifiedSavedContacts = localStorage.getItem('savedContacts');
+    const parsedSavedContacts = JSON.parse(stringifiedSavedContacts);
+
+    if (parsedSavedContacts) {
+      this.setState({ contacts: parsedSavedContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { contacts } = this.state;
+
+    if (contacts !== prevState.contacts) {
+      localStorage.setItem('savedContacts', JSON.stringify(contacts));
+    }
+  }
+
+  handleFormSubmit = (user) => {
+    const uid = uuidv4();
+    const name = user.name;
+    const number = user.number;
+
+    const contact = { uid, name, number };
+    this.setState(({contacts}) => {
+      return {
+        contacts: [contact, ...contacts]
+      }
+    });
+  }
+
+  handleFilterInputChange = (value) => {
+    this.setState({ filter: value });
+  }
+
+  handleDeleteContact = (id) => {
+    this.setState(({ contacts }) => {
+      return {contacts: contacts.filter(contact => contact.uid !== id)}
+    })
+  }
+
+  render() {
+    const filteredContacts = this.state.contacts.filter(contact => {
+      return contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
+    })
+    const isAnyContact = this.state.contacts.length > 0;
+    
+    return (
+      <Fragment>
+        <Section>
+        <h1 className="">Phonebook</h1>
+        <ContactForm
+          onFormSubmit={this.handleFormSubmit}
+          existingContacts ={this.state.contacts}
+        />
+        </Section>
+        <Section>
+        <h2 className="">Contacts</h2>
+        <Filter
+          onFilterChange={this.handleFilterInputChange}
+          isFilterActive={isAnyContact}  
+        />
+        <ContactList
+          contacts={filteredContacts}
+          onDeleteButtonClick={this.handleDeleteContact}
+        />
+        </Section>
+      </Fragment>
+    );
+  }  
 }
 
 export default App;
