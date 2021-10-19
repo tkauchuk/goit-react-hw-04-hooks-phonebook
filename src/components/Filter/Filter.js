@@ -1,34 +1,32 @@
-import { Component } from "react";
 import PropTypes from 'prop-types';
 
 import styles from './Filter.module.css';
 
-class Filter extends Component {
 
-    static propTypes = {
-        onFilterChange: PropTypes.func
+function Filter({onFilterChange, isFilterActive}) {
+
+    const onFilterInputChange = event => {
+        const {value} = event.target;
+        onFilterChange(value);
     }
 
-    onFilterInputChange = (event) => {
-        const { target } = event;
-        this.props.onFilterChange(target.value);
-    }
+    return (
+        <label className={styles.label}>
+            Find contacts by name
+            <input
+                className={styles.input}
+                type="text"
+                name="filter"
+                autoComplete="off"
+                disabled={!isFilterActive}
+                onChange={onFilterInputChange}
+            />
+        </label>
+    );
+}
 
-    render() {
-        return (
-            <label className={styles.label}>
-                Find contacts by name
-                <input
-                    className={styles.input}
-                    type="text"
-                    name="filter"
-                    autoComplete="off"
-                    disabled={!this.props.isFilterActive}
-                    onChange={this.onFilterInputChange}
-                />
-            </label>
-        );
-    }
+Filter.propTypes = {
+    onFilterChange: PropTypes.func
 }
 
 export default Filter;
